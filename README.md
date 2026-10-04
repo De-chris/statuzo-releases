@@ -1,0 +1,1 @@
+# statuzo-releases
