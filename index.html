@@ -185,6 +185,15 @@
   .rv{opacity:0;transform:translateY(18px);transition:opacity .7s ease,transform .7s ease}
   .rv.in{opacity:1;transform:none}
   @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}html{scroll-behavior:auto}.rv{opacity:1;transform:none}}
+  /* announcement banner (fed by announcement.json in the public repo) */
+  #ann{display:none;max-width:760px;margin:84px auto 0;padding:16px 18px;border:1px solid var(--line2);border-left:3px solid var(--accent);border-radius:12px;background:var(--panel2);position:relative;z-index:3}
+  #ann.show{display:block}
+  #ann h3{font-size:16px;margin:0 28px 4px 0}
+  #ann p{margin:0;color:var(--muted);font-size:14px;white-space:pre-line}
+  #ann a.btn{margin-top:12px;display:inline-flex}
+  #ann button{position:absolute;top:8px;right:10px;background:none;border:0;color:var(--muted);font-size:22px;line-height:1;cursor:pointer;padding:4px 8px}
+  .dlcount{display:none;align-items:center;gap:8px;font:13px var(--mono);color:var(--ok);margin:-12px 0 18px}
+  .dlcount.show{display:flex}
 </style>
 </head>
 <body>
@@ -225,6 +234,7 @@
 </nav>
 
 <main id="top">
+  <aside id="ann" role="status" aria-live="polite"><button type="button" id="annX" aria-label="Close announcement">&times;</button><h3 id="annT"></h3><p id="annM"></p></aside>
   <header class="hero">
     <div class="wrap">
       <div class="hero-grid">
@@ -281,6 +291,7 @@
           <div class="card-b">
             <div class="ver"><span id="ver">…</span><small id="tag"></small></div>
             <div class="meta" id="meta">Checking for the latest version…</div>
+            <div class="dlcount" id="dlcount"><svg class="i"><use href="#i-down"/></svg><span id="dlnum"></span></div>
             <a class="btn primary" id="dl" href="https://github.com/De-chris/statuzo-releases/releases/latest"><svg class="i"><use href="#i-download"/></svg>Download latest APK</a>
             <div class="notes" id="notes"></div>
             <button class="linkbtn" id="olderBtn" type="button" aria-expanded="false" aria-controls="older"><svg class="i"><use href="#i-history"/></svg>Older versions<svg class="i chev"><use href="#i-chev"/></svg></button>
@@ -373,9 +384,10 @@
     .then(loadReleases);
 
   function loadReleases() {
-    fetch('https://api.github.com/repos/' + REPO + '/releases?per_page=30', { headers: { Accept: 'application/vnd.github+json' } })
+    fetch('https://api.github.com/repos/' + REPO + '/releases?per_page=100', { headers: { Accept: 'application/vnd.github+json' } })
       .then(function (r) { if (!r.ok) throw 0; return r.json(); })
       .then(function (list) {
+        countDownloads(list);
         list = list.filter(function (r) { return !r.draft && !r.prerelease; });
         list.forEach(function (r, i) {
           var apk = (r.assets || []).filter(function (a) { return /\.apk$/i.test(a.name); })[0];
@@ -403,6 +415,54 @@
     var open = $('older').classList.toggle('open');
     this.setAttribute('aria-expanded', open);
   });
+
+  // Download count: GitHub counts every APK download of every release. It is a count of downloads,
+  // not installs (an in-app update download counts too). Kept 10 minutes in the browser so the
+  // free GitHub limit (60 requests an hour per visitor) is never hit.
+  function showCount(n) {
+    if (!(n > 0)) return;
+    $('dlnum').textContent = n.toLocaleString() + ' downloads so far';
+    $('dlcount').classList.add('show');
+  }
+  function countDownloads(list) {
+    var n = 0;
+    list.forEach(function (r) {
+      (r.assets || []).forEach(function (a) { if (/\.apk$/i.test(a.name)) n += a.download_count || 0; });
+    });
+    try { localStorage.setItem('sz_dl', JSON.stringify({ n: n, t: Date.now() })); } catch (e) {}
+    showCount(n);
+  }
+  try {
+    var saved = JSON.parse(localStorage.getItem('sz_dl') || 'null');
+    if (saved) showCount(saved.n);
+  } catch (e) {}
+
+  // Announcement: edit announcement.json in the public releases repo. Shows once per id.
+  function loadAnnouncement(branch) {
+    fetch('https://raw.githubusercontent.com/' + REPO + '/' + branch + '/announcement.json', { cache: 'no-store' })
+      .then(function (r) { if (!r.ok) throw 0; return r.json(); })
+      .then(function (a) {
+        if (!a || !(a.title || a.message)) return;
+        if (a.expires && Date.now() > new Date(a.expires).getTime() + 86400000) return;
+        var id = String(a.id || a.title || a.message);
+        try { if (localStorage.getItem('sz_ann') === id) return; } catch (e) {}
+        $('annT').textContent = a.title || '';
+        $('annM').textContent = a.message || '';
+        if (a.buttonUrl && /^https?:\/\//i.test(a.buttonUrl)) {
+          var b = document.createElement('a');
+          b.className = 'btn primary'; b.href = a.buttonUrl; b.rel = 'noopener';
+          b.textContent = a.buttonText || 'Open';
+          $('ann').appendChild(b);
+        }
+        $('ann').classList.add('show');
+        $('annX').onclick = function () {
+          $('ann').classList.remove('show');
+          try { localStorage.setItem('sz_ann', id); } catch (e) {}
+        };
+      })
+      .catch(function () { if (branch === 'main') loadAnnouncement('master'); });
+  }
+  loadAnnouncement('main');
 
   // reveal on scroll
   var els = document.querySelectorAll('.rv');
