@@ -1,7 +1,7 @@
 {
-  "version": "1.0.8",
-  "versionCode": 8,
-  "apkUrl": "https://github.com/De-chris/statuzo-releases/releases/download/v1.0.8/Statuzo-1.0.8.apk",
-  "pageUrl": "https://github.com/De-chris/statuzo-releases/releases/tag/v1.0.8",
+  "version": "1.0.9",
+  "versionCode": 9,
+  "apkUrl": "https://github.com/De-chris/statuzo-releases/releases/download/v1.0.9/Statuzo-1.0.9.apk",
+  "pageUrl": "https://github.com/De-chris/statuzo-releases/releases/tag/v1.0.9",
   "notes": "Statuzo: new logo, Settings and a how-it-works tour.\n\nNew: fresh logo everywhere. Settings button on the Statuses tab. First-use tour showing where to tap. \"App maintenance\" notification while Statuzo updates. Status maker and Sticker maker easy to find in Tools. Name your audio, also straight from a status.\n\nFixed: saving works in every tool. Loading screen no longer cuts off the name. Documents says WA Business. File previews. Asks for all permissions at first launch.\n"
 }
