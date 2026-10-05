@@ -1,0 +1,7 @@
+{
+  "version": "1.0.4",
+  "versionCode": 4,
+  "apkUrl": "https://github.com/De-chris/statuzo-releases/releases/download/v1.0.4/Statuzo-1.0.4.apk",
+  "pageUrl": "https://github.com/De-chris/statuzo-releases/releases/tag/v1.0.4",
+  "notes": "Statuzo update.\nNew: light and dark mode (Tools > Appearance, or the sun/moon button on Statuses), pickers open straight in the right WhatsApp folder, HD video now works, and the app updates itself from GitHub.\n"
+}
