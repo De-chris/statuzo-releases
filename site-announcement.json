@@ -3,6 +3,6 @@
   "title": "Statuzo 1.0.1 is out",
   "message": "Download the latest version below.",
   "buttonText": "Download",
-  "buttonUrl": "https://github.com/De-chris/statuzo-releases/releases/latest",
+  "buttonUrl": "https://statuzo.vercel.app/#download",
   "expires": "2026-10-20"
 }
